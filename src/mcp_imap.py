@@ -23,6 +23,7 @@ MAIL_FROM = os.environ.get("MAIL_FROM", MAIL_USER)
 
 def _imap_connect() -> imaplib.IMAP4_SSL:
     conn = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
+    conn.socket().settimeout(15)
     conn.login(MAIL_USER, MAIL_PASS)
     return conn
 
@@ -118,11 +119,17 @@ def read_email(uid: str, folder: str = "INBOX") -> dict:
     return _parse_message(raw)
 
 
+def _sanitize_imap_string(value: str) -> str:
+    """Échappe les guillemets pour éviter l'injection dans les commandes IMAP."""
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def search_emails(query: str, folder: str = "INBOX", limit: int = 10) -> list[dict]:
     """Recherche des emails par mot-clé (sujet ou expéditeur)."""
+    safe_query = _sanitize_imap_string(query)
     conn = _imap_connect()
     conn.select(folder)
-    _, data = conn.search(None, f'OR SUBJECT "{query}" FROM "{query}"')
+    _, data = conn.search(None, f'OR SUBJECT "{safe_query}" FROM "{safe_query}"')
     ids = data[0].split()[-limit:]
     ids = list(reversed(ids))
 
@@ -153,7 +160,7 @@ def send_email(to: str, subject: str, body: str, cc: str = "") -> dict:
     msg.attach(email.mime.text.MIMEText(body, "plain", "utf-8"))
 
     recipients = [to] + ([cc] if cc else [])
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
         server.ehlo()
         server.starttls()
         server.login(MAIL_USER, MAIL_PASS)
