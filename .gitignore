@@ -1,0 +1,67 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+.pnpm-store/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Environnement & secrets ---
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+*credentials*
+
+# --- Sessions scrapers / cookies ---
+scraper-sessions/
+*_session*
+fb_session*
+
+# --- Données locales ---
+local/data/
+backups/
+*.dump
+*.sql.gz
+
+# --- Playwright ---
+test-results/
+playwright-report/
+playwright/.cache/
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Logs ---
+logs/
+*.log
+
+# --- Cursor hooks (session temp) ---
+.cursor/hooks/.session-edits

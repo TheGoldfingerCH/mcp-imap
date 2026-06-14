@@ -1,0 +1,37 @@
+[project]
+name = "tool_mcp_imap"
+version = "0.1.0"
+description = "Serveur MCP IMAP/SMTP pour Hermes — accès mail depuis hermes-prive"
+authors = [{ name = "TheGoldfinch" }]
+requires-python = ">=3.12"
+dependencies = []
+# imaplib, smtplib, email — stdlib Python, aucune dépendance externe
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "ruff>=0.7",
+    "mypy>=1.11",
+]
+
+[project.scripts]
+mcp-imap = "src.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DTZ"]
+ignore = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
