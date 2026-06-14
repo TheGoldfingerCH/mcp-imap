@@ -1,6 +1,6 @@
 # mcp-imap
 
-A minimal MCP server for reading and sending emails via IMAP/SMTP — works with any mail provider (Infomaniak, Gmail, iCloud, Proton Bridge, etc.).
+A minimal MCP server for reading and sending emails via IMAP/SMTP — works with any mail provider (Infomaniak, Gmail, iCloud, Proton Bridge, etc.) and supports **multiple accounts** in a single instance.
 
 **Zero external dependencies** — uses Python's built-in `imaplib`, `smtplib` and `email` modules only.
 
@@ -10,6 +10,7 @@ Compatible with [Hermes](https://github.com/NousResearch/hermes-agent), [Claude 
 
 | Tool | Description |
 |------|-------------|
+| `list_accounts` | List all configured mail accounts |
 | `list_folders` | List available IMAP folders |
 | `list_emails` | List recent emails (with unread filter) |
 | `read_email` | Read full email content by UID |
@@ -17,6 +18,8 @@ Compatible with [Hermes](https://github.com/NousResearch/hermes-agent), [Claude 
 | `send_email` | Send an email via SMTP |
 | `move_email` | Move email to another folder |
 | `mark_as_read` | Mark email as read |
+
+All tools accept an optional `account` parameter to target a specific account (e.g. `"pro"`, `"perso"`). Omit it to use the default account.
 
 ## Installation
 
@@ -28,6 +31,35 @@ cp .env.example .env
 ```
 
 Python 3.12+ required. No `pip install` needed.
+
+## Multi-account setup
+
+Add as many accounts as you need using the `MAIL_<ACCOUNT>_*` pattern in `.env`:
+
+```env
+# Default account
+MAIL_USER=you@yourdomain.com
+MAIL_PASS=password
+MAIL_IMAP_HOST=imap.example.com
+MAIL_SMTP_HOST=smtp.example.com
+
+# Second account named "pro"
+MAIL_PRO_USER=pro@company.com
+MAIL_PRO_PASS=password
+MAIL_PRO_IMAP_HOST=imap.company.com
+MAIL_PRO_SMTP_HOST=smtp.company.com
+
+# Third account named "perso"
+MAIL_PERSO_USER=me@gmail.com
+MAIL_PERSO_PASS=app_password
+MAIL_PERSO_IMAP_HOST=imap.gmail.com
+MAIL_PERSO_SMTP_HOST=smtp.gmail.com
+```
+
+Then in the AI chat:
+- `list_emails()` → default account inbox
+- `list_emails(account="pro")` → pro account inbox
+- `send_email(to="...", subject="...", body="...", account="perso")` → send from perso account
 
 ## Configuration
 
