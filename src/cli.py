@@ -21,6 +21,10 @@ def main() -> None:
     env_path = pathlib.Path(__file__).parent.parent / ".env"
     _load_env(env_path)
 
+    # Ajoute le répertoire parent au path pour que 'src' soit trouvable
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+
     from src.mcp_imap import main as run_mcp
     run_mcp()
 
