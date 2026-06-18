@@ -14,30 +14,41 @@ from typing import Any
 # Compte par défaut (MAIL_*)
 # Comptes supplémentaires : MAIL_<ACCOUNT>_* (ex: MAIL_PRO_HOST, MAIL_PERSO_HOST)
 
+def _missing_env(keys: list[str]) -> list[str]:
+    return [key for key in keys if not os.environ.get(key)]
+
+
 def _get_account_config(account: str | None) -> dict:
-    """Retourne la config IMAP/SMTP pour un compte donné (None = compte par défaut)."""
-    if account:
-        prefix = f"MAIL_{account.upper()}_"
-        host_key = f"{prefix}IMAP_HOST"
-        if not os.environ.get(host_key):
-            raise ValueError(f"Account '{account}' not configured (missing {host_key})")
+    """Retourne la config IMAP/SMTP pour un compte donné (None/default = compte par défaut)."""
+    account_name = (account or "default").strip().lower()
+    if account_name == "default":
+        required = ["MAIL_IMAP_HOST", "MAIL_SMTP_HOST", "MAIL_USER", "MAIL_PASS"]
+        missing = _missing_env(required)
+        if missing:
+            raise ValueError(f"Account 'default' not configured (missing {', '.join(missing)})")
         return {
-            "imap_host": os.environ[f"{prefix}IMAP_HOST"],
-            "imap_port": int(os.environ.get(f"{prefix}IMAP_PORT", "993")),
-            "smtp_host": os.environ[f"{prefix}SMTP_HOST"],
-            "smtp_port": int(os.environ.get(f"{prefix}SMTP_PORT", "587")),
-            "user": os.environ[f"{prefix}USER"],
-            "password": os.environ[f"{prefix}PASS"],
-            "mail_from": os.environ.get(f"{prefix}FROM", os.environ[f"{prefix}USER"]),
+            "imap_host": os.environ["MAIL_IMAP_HOST"],
+            "imap_port": int(os.environ.get("MAIL_IMAP_PORT", "993")),
+            "smtp_host": os.environ["MAIL_SMTP_HOST"],
+            "smtp_port": int(os.environ.get("MAIL_SMTP_PORT", "587")),
+            "user": os.environ["MAIL_USER"],
+            "password": os.environ["MAIL_PASS"],
+            "mail_from": os.environ.get("MAIL_FROM", os.environ["MAIL_USER"]),
         }
+
+    prefix = f"MAIL_{account_name.upper()}_"
+    required = [f"{prefix}IMAP_HOST", f"{prefix}SMTP_HOST", f"{prefix}USER", f"{prefix}PASS"]
+    missing = _missing_env(required)
+    if missing:
+        raise ValueError(f"Account '{account_name}' not configured (missing {', '.join(missing)})")
     return {
-        "imap_host": os.environ.get("MAIL_IMAP_HOST", ""),
-        "imap_port": int(os.environ.get("MAIL_IMAP_PORT", "993")),
-        "smtp_host": os.environ.get("MAIL_SMTP_HOST", ""),
-        "smtp_port": int(os.environ.get("MAIL_SMTP_PORT", "587")),
-        "user": os.environ.get("MAIL_USER", ""),
-        "password": os.environ.get("MAIL_PASS", ""),
-        "mail_from": os.environ.get("MAIL_FROM", os.environ.get("MAIL_USER", "")),
+        "imap_host": os.environ[f"{prefix}IMAP_HOST"],
+        "imap_port": int(os.environ.get(f"{prefix}IMAP_PORT", "993")),
+        "smtp_host": os.environ[f"{prefix}SMTP_HOST"],
+        "smtp_port": int(os.environ.get(f"{prefix}SMTP_PORT", "587")),
+        "user": os.environ[f"{prefix}USER"],
+        "password": os.environ[f"{prefix}PASS"],
+        "mail_from": os.environ.get(f"{prefix}FROM", os.environ[f"{prefix}USER"]),
     }
 
 
@@ -47,7 +58,7 @@ def _list_accounts() -> list[str]:
     for key in os.environ:
         if key.startswith("MAIL_") and key.endswith("_IMAP_HOST"):
             name = key[5:-10].lower()  # MAIL_PRO_IMAP_HOST → pro
-            if name:
+            if name and name != "default":
                 accounts.append(name)
     return accounts
 
